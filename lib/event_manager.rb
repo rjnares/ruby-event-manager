@@ -2,6 +2,14 @@ require 'csv'
 require 'google/apis/civicinfo_v2'
 require 'erb'
 
+def to_hour(date_and_time)
+  Time.strptime(date_and_time, '%m/%d/%y %k:%M').hour
+end
+
+def sort_decreasing_by_count(counts)
+  counts.sort_by { |key, count| count }.map(&:first).reverse
+end
+
 def clean_phone_number(phone_number)
   phone_number_digits = phone_number.gsub(/\D/, '')
   bad_phone_number = '0000000000'
@@ -54,9 +62,12 @@ contents = CSV.open(
 
 template_letter = File.read('form_letter.erb')
 erb_template = ERB.new template_letter
+registration_hour_counts = Hash.new(0)
 
 contents.each do |row|
   id = row[0]
+  registration_hour = to_hour(row[:regdate])
+  registration_hour_counts[registration_hour] += 1
   name = row[:first_name]
   phone_number = clean_phone_number(row[:homephone])
   zipcode = clean_zipcode(row[:zipcode])
@@ -66,3 +77,5 @@ contents.each do |row|
 
   save_thank_you_letter(id,form_letter)
 end
+
+peak_registration_hours = sort_decreasing_by_count(registration_hour_counts)
