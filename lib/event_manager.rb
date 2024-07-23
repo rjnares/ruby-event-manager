@@ -3,17 +3,7 @@ require 'google/apis/civicinfo_v2'
 require 'erb'
 
 def to_day(date_and_time)
-  num_to_day = {
-    0 => 'Sunday',
-    1 => 'Monday',
-    2 => 'Tuesday',
-    3 => 'Wednesday',
-    4 => 'Thursday',
-    5 => 'Friday',
-    6 => 'Saturday'
-  }
-  num_day = to_time(date_and_time).wday
-  num_to_day[num_day]
+  to_time(date_and_time).strftime('%A')
 end
 
 def to_hour(date_and_time)
