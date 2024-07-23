@@ -2,8 +2,26 @@ require 'csv'
 require 'google/apis/civicinfo_v2'
 require 'erb'
 
+def to_day(date_and_time)
+  num_to_day = {
+    0 => 'Sunday',
+    1 => 'Monday',
+    2 => 'Tuesday',
+    3 => 'Wednesday',
+    4 => 'Thursday',
+    5 => 'Friday',
+    6 => 'Saturday'
+  }
+  num_day = to_time(date_and_time).wday
+  num_to_day[num_day]
+end
+
 def to_hour(date_and_time)
-  Time.strptime(date_and_time, '%m/%d/%y %k:%M').hour
+  to_time(date_and_time).hour
+end
+
+def to_time(date_and_time)
+  Time.strptime(date_and_time, '%m/%d/%y %k:%M')
 end
 
 def sort_decreasing_by_count(counts)
@@ -63,11 +81,14 @@ contents = CSV.open(
 template_letter = File.read('form_letter.erb')
 erb_template = ERB.new template_letter
 registration_hour_counts = Hash.new(0)
+registration_day_counts = Hash.new(0)
 
 contents.each do |row|
   id = row[0]
   registration_hour = to_hour(row[:regdate])
   registration_hour_counts[registration_hour] += 1
+  registration_day = to_day(row[:regdate])
+  registration_day_counts[registration_day] += 1
   name = row[:first_name]
   phone_number = clean_phone_number(row[:homephone])
   zipcode = clean_zipcode(row[:zipcode])
@@ -79,3 +100,4 @@ contents.each do |row|
 end
 
 peak_registration_hours = sort_decreasing_by_count(registration_hour_counts)
+peak_registration_days = sort_decreasing_by_count(registration_day_counts)
